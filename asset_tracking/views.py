@@ -12,6 +12,8 @@ from django.contrib.auth.models import User
 from rest_framework import generics
 from .serializers import UserRegistrationSerializer
 
+from .payments import create_subscription
+
 class UserRegistrationView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
@@ -63,3 +65,25 @@ class LogoutView(APIView):
         token.delete()
         
         return Response({"message":" you are logged out"},status=status.HTTP_200_OK)
+
+
+# for subscription
+class SubscriptionPurchaseView(APIView):
+    def post(self, request, *args, **kwargs):
+        
+        data = request.data
+        user_id = data.get('user_id')
+        subscription_plan = data.get('subscription_plan')
+
+        if user_id and subscription_plan:
+            subscription=create_subscription(subscription_plan,user_id)
+            return Response({'message': f'Subscription plan "{subscription.plan}" purchased for user {subscription.id}'},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid data provided'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
